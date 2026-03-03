@@ -49,7 +49,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 min-h-[4rem]">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Active Employees
             </CardTitle>
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
 
         <Link href="/admin/submissions?status=pending">
           <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 min-h-[4rem]">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Pending Submissions
               </CardTitle>
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
         </Link>
 
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 min-h-[4rem]">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Logged Today
             </CardTitle>
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 min-h-[4rem]">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Not Logged Today
             </CardTitle>
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 min-h-[4rem]">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Flagged Days
             </CardTitle>
