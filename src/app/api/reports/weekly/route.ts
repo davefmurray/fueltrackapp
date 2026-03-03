@@ -64,18 +64,30 @@ export async function GET(request: NextRequest) {
     const dateStr = formatDate(day);
     const log = logsByDate.get(dateStr);
     const hasComplete = log?.start_miles != null && log?.end_miles != null;
+    const logStatus = log?.status || "pending";
+    const isApproved = logStatus === "approved";
 
     if (hasComplete) {
-      const calc = calculateDailyReimbursement({
-        startMiles: Number(log!.start_miles),
-        endMiles: Number(log!.end_miles),
-        commuteMiles: Number(employee.commute_miles),
-        vehicleMpg: Number(employee.vehicle_mpg),
-        gasPricePerGallon: gasPriceValue,
-      });
-      totalMiles += calc.totalMiles;
-      totalExcessMiles += calc.excessMiles;
-      totalReimbursement += calc.reimbursement;
+      // Only calculate reimbursement for approved logs
+      const calc = isApproved
+        ? calculateDailyReimbursement({
+            startMiles: Number(log!.start_miles),
+            endMiles: Number(log!.end_miles),
+            commuteMiles: Number(employee.commute_miles),
+            vehicleMpg: Number(employee.vehicle_mpg),
+            gasPricePerGallon: gasPriceValue,
+          })
+        : {
+            totalMiles: Math.max(0, Number(log!.end_miles) - Number(log!.start_miles)),
+            excessMiles: 0,
+            reimbursement: 0,
+          };
+
+      if (isApproved) {
+        totalMiles += calc.totalMiles;
+        totalExcessMiles += calc.excessMiles;
+        totalReimbursement += calc.reimbursement;
+      }
 
       return {
         date: dateStr,
@@ -87,6 +99,7 @@ export async function GET(request: NextRequest) {
         reimbursement: calc.reimbursement,
         flagged: log!.flagged,
         flagReason: log!.flag_reason,
+        status: logStatus,
       };
     }
 
@@ -100,6 +113,7 @@ export async function GET(request: NextRequest) {
       reimbursement: 0,
       flagged: log?.flagged || false,
       flagReason: log?.flag_reason || null,
+      status: logStatus,
     };
   });
 

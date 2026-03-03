@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
   y += 10;
 
   // Table headers
-  const cols = [14, 40, 65, 90, 115, 140, 165];
+  const cols = [14, 34, 56, 78, 100, 122, 147, 172];
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text("Day", cols[0], y);
@@ -95,7 +95,8 @@ export async function GET(request: NextRequest) {
   doc.text("End", cols[3], y);
   doc.text("Total Mi", cols[4], y);
   doc.text("Excess Mi", cols[5], y);
-  doc.text("Reimb.", cols[6], y);
+  doc.text("Status", cols[6], y);
+  doc.text("Reimb.", cols[7], y);
   y += 2;
   doc.line(14, y, pageWidth - 14, y);
   y += 5;
@@ -110,29 +111,42 @@ export async function GET(request: NextRequest) {
     const dateStr = formatDate(day);
     const log = logsByDate.get(dateStr);
     const hasComplete = log?.start_miles != null && log?.end_miles != null;
+    const logStatus = log?.status || "pending";
+    const isApproved = logStatus === "approved";
 
     doc.text(getDayName(day).slice(0, 3), cols[0], y);
     doc.text(dateStr.slice(5), cols[1], y);
 
     if (hasComplete) {
-      const calc = calculateDailyReimbursement({
-        startMiles: Number(log!.start_miles),
-        endMiles: Number(log!.end_miles),
-        commuteMiles: Number(employee.commute_miles),
-        vehicleMpg: Number(employee.vehicle_mpg),
-        gasPricePerGallon: gasPriceValue,
-      });
-      totalMiles += calc.totalMiles;
-      totalExcess += calc.excessMiles;
-      totalReimb += calc.reimbursement;
+      const calc = isApproved
+        ? calculateDailyReimbursement({
+            startMiles: Number(log!.start_miles),
+            endMiles: Number(log!.end_miles),
+            commuteMiles: Number(employee.commute_miles),
+            vehicleMpg: Number(employee.vehicle_mpg),
+            gasPricePerGallon: gasPriceValue,
+          })
+        : {
+            totalMiles: Math.max(0, Number(log!.end_miles) - Number(log!.start_miles)),
+            excessMiles: 0,
+            reimbursement: 0,
+          };
+
+      if (isApproved) {
+        totalMiles += calc.totalMiles;
+        totalExcess += calc.excessMiles;
+        totalReimb += calc.reimbursement;
+      }
 
       doc.text(String(Number(log!.start_miles)), cols[2], y);
       doc.text(String(Number(log!.end_miles)), cols[3], y);
       doc.text(calc.totalMiles.toFixed(1), cols[4], y);
-      doc.text(calc.excessMiles.toFixed(1), cols[5], y);
-      doc.text(`$${calc.reimbursement.toFixed(2)}`, cols[6], y);
+      doc.text(isApproved ? calc.excessMiles.toFixed(1) : "—", cols[5], y);
+      doc.text(logStatus.charAt(0).toUpperCase() + logStatus.slice(1), cols[6], y);
+      doc.text(isApproved ? `$${calc.reimbursement.toFixed(2)}` : "$0.00", cols[7], y);
     } else if (log?.flagged) {
       doc.text("FLAGGED", cols[2], y);
+      doc.text(logStatus.charAt(0).toUpperCase() + logStatus.slice(1), cols[6], y);
     } else {
       doc.text("—", cols[2], y);
     }
@@ -147,7 +161,7 @@ export async function GET(request: NextRequest) {
   doc.text("TOTAL", cols[0], y);
   doc.text(totalMiles.toFixed(1), cols[4], y);
   doc.text(totalExcess.toFixed(1), cols[5], y);
-  doc.text(`$${totalReimb.toFixed(2)}`, cols[6], y);
+  doc.text(`$${totalReimb.toFixed(2)}`, cols[7], y);
   y += 12;
 
   // Formula explanation

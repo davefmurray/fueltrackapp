@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface DashboardStats {
@@ -8,6 +9,7 @@ interface DashboardStats {
   loggedToday: number;
   notLoggedToday: number;
   flaggedDays: number;
+  pendingSubmissions: number;
   currentGasPrice: number | null;
   currentMonth: string;
 }
@@ -45,7 +47,7 @@ export default function AdminDashboard() {
     <div className="space-y-6 max-w-4xl">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -56,6 +58,21 @@ export default function AdminDashboard() {
             <p className="text-3xl font-bold">{stats.activeEmployees}</p>
           </CardContent>
         </Card>
+
+        <Link href="/admin/submissions?status=pending">
+          <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Pending Submissions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-amber-600">
+                {stats.pendingSubmissions}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card>
           <CardHeader className="pb-2">

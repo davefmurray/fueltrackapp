@@ -13,10 +13,11 @@ export function DailyStatusCard({ log, dateLabel }: DailyStatusCardProps) {
   const hasStart = log?.start_miles != null;
   const hasEnd = log?.end_miles != null;
   const isFlagged = log?.flagged;
+  const isComplete = hasStart && hasEnd;
 
   let status: "not-started" | "in-progress" | "complete" | "flagged";
   if (isFlagged) status = "flagged";
-  else if (hasStart && hasEnd) status = "complete";
+  else if (isComplete) status = "complete";
   else if (hasStart) status = "in-progress";
   else status = "not-started";
 
@@ -43,6 +44,12 @@ export function DailyStatusCard({ log, dateLabel }: DailyStatusCardProps) {
     },
   };
 
+  const approvalBadge = {
+    pending: { label: "Pending Review", variant: "secondary" as const },
+    approved: { label: "Approved", variant: "default" as const },
+    rejected: { label: "Rejected", variant: "destructive" as const },
+  };
+
   const config = statusConfig[status];
 
   return (
@@ -52,7 +59,14 @@ export function DailyStatusCard({ log, dateLabel }: DailyStatusCardProps) {
           <span className="text-sm font-medium text-muted-foreground">
             {dateLabel}
           </span>
-          <Badge variant={config.variant}>{config.label}</Badge>
+          <div className="flex gap-2">
+            <Badge variant={config.variant}>{config.label}</Badge>
+            {isComplete && log?.status && (
+              <Badge variant={approvalBadge[log.status].variant}>
+                {approvalBadge[log.status].label}
+              </Badge>
+            )}
+          </div>
         </div>
 
         {log && (
@@ -74,6 +88,12 @@ export function DailyStatusCard({ log, dateLabel }: DailyStatusCardProps) {
 
         {isFlagged && log?.flag_reason && (
           <p className="mt-2 text-xs text-destructive">{log.flag_reason}</p>
+        )}
+
+        {isComplete && log?.status === "rejected" && log?.review_note && (
+          <p className="mt-2 text-xs text-destructive">
+            Reason: {log.review_note}
+          </p>
         )}
       </CardContent>
     </Card>

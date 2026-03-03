@@ -1,3 +1,5 @@
+export type LogStatus = 'pending' | 'approved' | 'rejected';
+
 export interface Employee {
   id: string;
   name: string;
@@ -25,6 +27,9 @@ export interface MileageLog {
   flagged: boolean;
   flag_reason: string | null;
   notes: string | null;
+  status: LogStatus;
+  reviewed_at: string | null;
+  review_note: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -71,4 +76,5 @@ export interface DailyReportEntry {
   reimbursement: number;
   flagged: boolean;
   flagReason: string | null;
+  status: LogStatus;
 }

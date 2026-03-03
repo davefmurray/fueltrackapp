@@ -37,11 +37,20 @@ export async function GET() {
     .eq("year", year)
     .maybeSingle();
 
+  // Count pending submissions (complete logs awaiting review)
+  const { count: pendingSubmissions } = await supabase
+    .from("mileage_logs")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "pending")
+    .not("start_miles", "is", null)
+    .not("end_miles", "is", null);
+
   return NextResponse.json({
     activeEmployees: activeEmployees || 0,
     loggedToday: loggedToday || 0,
     notLoggedToday: (activeEmployees || 0) - (loggedToday || 0),
     flaggedDays: flaggedDays || 0,
+    pendingSubmissions: pendingSubmissions || 0,
     currentGasPrice: gasPrice ? Number(gasPrice.price_per_gallon) : null,
     currentMonth: format(now, "MMMM yyyy"),
   });
